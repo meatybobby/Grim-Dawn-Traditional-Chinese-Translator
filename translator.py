@@ -3,6 +3,8 @@ import os
 import requests
 import tempfile
 import subprocess
+import tkinter as tk
+from tkinter import filedialog, messagebox
 
 parser = argparse.ArgumentParser(description='Translate Simplified Chinese to Traditional Chinese')
 parser.add_argument('--input_arc', type=str)
@@ -87,8 +89,7 @@ def unpack_arc(arc_exe, input_arc, output_path):
 def pack_arc(arc_exe, input_path, output_arc):
     subprocess.run([arc_exe, output_arc, "-update", ".", input_path, "6"], check=True)
 
-if __name__ == "__main__":
-    args = parser.parse_args()
+def run():
     with tempfile.TemporaryDirectory() as tempdir:
         unpack_input = os.path.join(tempdir, "text_org")
         grim_path = args.grim_path if args.grim_path is not None else grim_path
@@ -109,3 +110,58 @@ if __name__ == "__main__":
         input_dir = os.listdir(unpack_temp)[0]
         unpack_path = os.path.join(unpack_temp, input_dir)
         pack_arc(arc_exe, unpack_path, args.output_arc)
+
+    messagebox.showinfo(message="Complete!")
+
+def select_base_file():
+    file = filedialog.askopenfilename(title="Select the base arc file")
+    entry_file1.delete(0, tk.END)
+    entry_file1.insert(0, file)
+    args.base_arc = file
+
+def select_input_file():
+    file = filedialog.askopenfilename(title="Select the input arc file")
+    entry_file2.delete(0, tk.END)
+    entry_file2.insert(0, file)
+    args.input_arc = file
+
+def select_grim_dir():
+    dir = filedialog.askdirectory(title="Select Grim Dawn directory")
+    entry_dir.delete(0, tk.END)
+    entry_dir.insert(0, dir)
+    args.grim_path = dir
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+
+    root = tk.Tk()
+    root.title("Grim Dawn Translator")
+
+    label_dir = tk.Label(root, text="Grim Dawn Directory:")
+    label_dir.pack()
+    dir_button = tk.Button(root, text="Select", command=select_grim_dir)
+    dir_button.pack()
+    entry_dir = tk.Entry(root, width=50)
+    entry_dir.pack()
+    entry_dir.insert(0, grim_path)
+
+    label_file1 = tk.Label(root, text="Base file:")
+    label_file1.pack()
+    base_button = tk.Button(root, text="Select", command=select_base_file)
+    base_button.pack()
+    entry_file1 = tk.Entry(root, width=50)
+    entry_file1.pack()
+    entry_file1.insert(0, input_arc)
+
+    label_file2 = tk.Label(root, text="Input file:")
+    label_file2.pack()
+    input_button = tk.Button(root, text="Select", command=select_input_file)
+    input_button.pack()
+    entry_file2 = tk.Entry(root, width=50)
+    entry_file2.pack()
+    entry_file2.insert(0, input_arc)
+
+    deal_button = tk.Button(root, text="Run", command=run)
+    deal_button.pack()
+
+    root.mainloop()
